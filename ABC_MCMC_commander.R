@@ -23,4 +23,7 @@ source(paste(getwd(),"AM3_SLiM.r",sep="/"))
 ## AM4. For all simulations for each model, calculate distance between observed and simulated summary statistics and retain the top 1% for each model. Then randomly sample 100 simulations (from the top 1% filtered) and for each calculate the mean distance from the drawn simulation to all the others (Euclidean distance of the PLS-DA transformed summary statistics). For each model, use Kolmogorov-Smirnov test to determine probability observed distance came from null distribution (distribution of pairwise Euclidean distances between drawn and all simulations for given model)
 plot.opt = "yes" #Do you want to write a pdf file with the histogram plot?
 source(paste(getwd(),"AM4_SLiM.r",sep="/"))
+
+## AM5. Estimate posterior probabilities of each model using multinomial logistic regression. The top 1% of simulations (based on Euclidean distance to the observed summary statistics) are retained. The model is model ~ comp1 + comp2 + comp3 + comp4. The posterior probabilities are estimated by giving the observed summary statistics to the model after fitting.
+source(paste(getwd(),"AM5_SLiM.r",sep="/"))
  
