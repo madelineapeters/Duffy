@@ -1,0 +1,44 @@
+initialize() {
+
+	// defineConstant("s",0.0433);
+	defineConstant("K1",14376);
+	defineConstant("K2",28470);
+	// defineConstant("mf",0.001);
+
+	initializeMutationRate(1.2e-8);
+	initializeMutationType("m1",0.5,"f",0.0);
+	initializeMutationType("m2",0.5,"f",s);
+	initializeGenomicElementType("g1",m1,1.0);
+	initializeGenomicElement(g1,1000,6001);
+	initializeRecombinationRate(3.3e-8);
+}
+
+// Create the ancestral African population
+1 { sim.addSubpop("p1", K1); }
+
+// Expand the African population to 28470
+// This occurs 291000 years (360) generations ago 
+360 { p1.setSubpopulationSize(K2); }
+
+
+// Allow allele to evolve neutrally until 40 kya (10400 generations)
+10400 late() {
+	
+	// introduce the sweep mutation
+	ind_num = asInteger(round(p1.individualCount*mf));
+	target = sample(p1.genomes,ind_num);
+	target.addNewDrawnMutation(m2, 3501);
+	
+}
+
+// Generation 58000 is the present. Output and terminate
+12000 late() {
+
+	allIndividuals = sim.subpopulations.individuals;
+	sampledIndividuals = sample(allIndividuals, 101);
+ 	sampledIndividuals.genomes.outputVCF();
+ 	sim.outputFixedMutations("~/Desktop/SLiM/fixedMutations" + x + ".txt");
+ 	sampledIndividuals.genomes.outputVCF("~/Desktop/SLiM/testSampleVCF" + x + ".txt");
+
+}
+
