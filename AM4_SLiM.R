@@ -4,28 +4,28 @@ Euclidean.fun = function(r){
   
   sqrt(sum(sapply(1:5,FUN=function(x){
     obs = obs.trans[1,x]
-    sim = AM1.BC.trans[r,x]
+    sim = AM3.BC.trans[r,x]
     
     (obs - sim)^2
   })))
   
 }
-AM1.BC.trans$Distance = sapply(1:nrow(AM1.BC.trans),FUN=Euclidean.fun)
+AM3.BC.trans$Distance = sapply(1:nrow(AM3.BC.trans),FUN=Euclidean.fun)
 
-AM1.top = AM1.BC.trans %>% group_by(var) %>% top_frac(.,-0.1,wt=Distance)
+AM4.top = AM3.BC.trans %>% group_by(var) %>% top_frac(.,-0.1,wt=Distance)
 
 # For each model, randomly sample 100 simulations (from the top % filtered above) and for each calculate the mean distance from the drawn simulation to all the others (Euclidean distance of the PLS-DA transformed summary statistics)
 
-AM1.top.1 = filter(AM1.top,var=="one")
-r.list = sample(1:nrow(AM1.top.1),100,replace=FALSE)
+AM4.top.1 = filter(AM4.top,var=="one")
+r.list = sample(1:nrow(AM4.top.1),100,replace=FALSE)
 distList.1 = sapply(r.list,FUN=function(r){
   
-  AM1.comp = slice(AM1.top.1,-r)
+  AM4.comp = slice(AM4.top.1,-r)
   
-  avgDist = mean(sapply(1:nrow(AM1.comp),FUN=function(x){
+  avgDist = mean(sapply(1:nrow(AM4.comp),FUN=function(x){
     
-    comp = AM1.comp[x,1:5]
-    sim = AM1.top.1[r,1:5]
+    comp = AM4.comp[x,1:5]
+    sim = AM4.top.1[r,1:5]
     
     dist = sqrt(sum(as.numeric(c((comp - sim)^2))))
     
@@ -37,16 +37,16 @@ distList.1 = sapply(r.list,FUN=function(r){
   
 })
 
-AM1.top.2 = filter(AM1.top,var=="two")
-r.list = sample(1:nrow(AM1.top.2),100,replace=FALSE)
+AM4.top.2 = filter(AM4.top,var=="two")
+r.list = sample(1:nrow(AM4.top.2),100,replace=FALSE)
 distList.2 = sapply(r.list,FUN=function(r){
   
-  AM1.comp = slice(AM1.top.2,-r)
+  AM4.comp = slice(AM4.top.2,-r)
   
-  avgDist = mean(sapply(1:nrow(AM1.comp),FUN=function(x){
+  avgDist = mean(sapply(1:nrow(AM4.comp),FUN=function(x){
     
-    comp = AM1.comp[x,1:5]
-    sim = AM1.top.2[r,1:5]
+    comp = AM4.comp[x,1:5]
+    sim = AM4.top.2[r,1:5]
     
     dist = sqrt(sum(as.numeric(c((comp - sim)^2))))
     
@@ -58,16 +58,16 @@ distList.2 = sapply(r.list,FUN=function(r){
   
 })
 
-AM1.top.3 = filter(AM1.top,var=="three")
-r.list = sample(1:nrow(AM1.top.3),100,replace=FALSE)
+AM4.top.3 = filter(AM4.top,var=="three")
+r.list = sample(1:nrow(AM4.top.3),100,replace=FALSE)
 distList.3 = sapply(r.list,FUN=function(r){
   
-  AM1.comp = slice(AM1.top.3,-r)
+  AM4.comp = slice(AM4.top.3,-r)
   
-  avgDist = mean(sapply(1:nrow(AM1.comp),FUN=function(x){
+  avgDist = mean(sapply(1:nrow(AM4.comp),FUN=function(x){
     
-    comp = AM1.comp[x,1:5]
-    sim = AM1.top.3[r,1:5]
+    comp = AM4.comp[x,1:5]
+    sim = AM4.top.3[r,1:5]
     
     dist = sqrt(sum(as.numeric(c((comp - sim)^2))))
     
@@ -79,16 +79,16 @@ distList.3 = sapply(r.list,FUN=function(r){
   
 })
 
-AM1.top.4 = filter(AM1.top,var=="four")
-r.list = sample(1:nrow(AM1.top.4),100,replace=FALSE)
+AM4.top.4 = filter(AM4.top,var=="four")
+r.list = sample(1:nrow(AM4.top.4),100,replace=FALSE)
 distList.4 = sapply(r.list,FUN=function(r){
   
-  AM1.comp = slice(AM1.top.4,-r)
+  AM4.comp = slice(AM4.top.4,-r)
   
-  avgDist = mean(sapply(1:nrow(AM1.comp),FUN=function(x){
+  avgDist = mean(sapply(1:nrow(AM4.comp),FUN=function(x){
     
-    comp = AM1.comp[x,1:5]
-    sim = AM1.top.4[r,1:5]
+    comp = AM4.comp[x,1:5]
+    sim = AM4.top.4[r,1:5]
     
     dist = sqrt(sum(as.numeric(c((comp - sim)^2))))
     
@@ -102,10 +102,10 @@ distList.4 = sapply(r.list,FUN=function(r){
 
 # For each model, calculate the distance from the observed transformed summary statistics to all the simulated sets and calculated fraction of all simulated sets whose distance is below the observed distance
 
-obsDist.1 = mean(AM1.top.1$Distance)
-obsDist.2 = mean(AM1.top.2$Distance)
-obsDist.3 = mean(AM1.top.3$Distance)
-obsDist.4 = mean(AM1.top.4$Distance)
+obsDist.1 = mean(AM4.top.1$Distance)
+obsDist.2 = mean(AM4.top.2$Distance)
+obsDist.3 = mean(AM4.top.3$Distance)
+obsDist.4 = mean(AM4.top.4$Distance)
 
 distList.1 = as.data.frame(distList.1)
 names(distList.1) = "Distance"
