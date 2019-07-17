@@ -6,57 +6,70 @@ library(EnvStats)
 
 # Read in n simulations
 
-AM1.1.df = read.csv(paste(getwd(),"AM1.1.csv",sep="/")) %>% 
-  select(.,-seed,-EHH,-iHH,-pi) %>% 
+AM2.1.df = read.csv(paste(getwd(),"AM1.1.csv",sep="/")) %>% 
+  slice(.,1:sims) %>% 
+  select(.,-seed,-EHH,-iHH) %>% 
   na.omit(.) %>% 
   mutate(.,mf = "one")
 
-AM1.2.df = read.csv(paste(getwd(),"AM1.2.csv",sep="/")) %>% 
-  select(.,-seed,-EHH,-iHH,-pi) %>% 
+AM2.2.df = read.csv(paste(getwd(),"AM1.2.csv",sep="/")) %>% 
+  slice(.,1:sims) %>% 
+  select(.,-seed,-EHH,-iHH) %>% 
   na.omit(.) %>% 
   mutate(.,mf = "two")
 
-AM1.3.df = read.csv(paste(getwd(),"AM1.3.csv",sep="/")) %>% 
-  select(.,-seed,-EHH,-iHH,-pi) %>% 
+AM2.3.df = read.csv(paste(getwd(),"AM1.3.csv",sep="/")) %>% 
+  slice(.,1:sims) %>% 
+  select(.,-seed,-EHH,-iHH) %>% 
   na.omit(.) %>% 
   mutate(.,mf = "three")
 
-AM1.4.df = read.csv(paste(getwd(),"AM1.4.csv",sep="/")) %>% 
-  select(.,-seed,-EHH,-iHH,-pi) %>% 
+AM2.4.df = read.csv(paste(getwd(),"AM1.4.csv",sep="/")) %>% 
+  slice(.,1:sims) %>% 
+  select(.,-seed,-EHH,-iHH) %>% 
   na.omit(.) %>% 
   mutate(.,mf = "four")
 
-AM1.df = bind_rows(AM1.1.df,AM1.2.df) %>% 
-  bind_rows(.,AM1.3.df) %>% 
-  bind_rows(.,AM1.4.df)
+AM2.5.df = read.csv(paste(getwd(),"AM1.5.csv",sep="/")) %>% 
+  slice(.,1:sims) %>% 
+  select(.,-seed,-EHH,-iHH) %>% 
+  na.omit(.) %>% 
+  mutate(.,mf = "five")
+
+AM2.df = bind_rows(AM2.1.df,AM2.2.df) %>% 
+  bind_rows(.,AM2.3.df) %>% 
+  bind_rows(.,AM2.4.df) %>% 
+  bind_rows(.,AM2.5.df)
 
 # Box-Cox transform summary statistics
 BoxCoxTrans = function(y){
   lambda = 1
   constant = 0
-  if(shapiro.test(AM1.df[,y])$p.value < 0.05) {
-    if (min(AM1.df[,y]) > 0){
-      lambda = boxcox(lm(AM1.df[,y]~AM1.df$s),optimize=TRUE)$lambda
+  AM2.samp = sample_n(AM2.df,min(nrow(AM2.df),5000),replace=FALSE)
+  if(shapiro.test(AM2.samp[,y])$p.value < 0.05) {
+    if (min(AM2.df[,y]) > 0){
+      lambda = EnvStats::boxcox(lm(AM2.df[,y]~AM2.df$s),optimize=TRUE)$lambda
     } else {
-      lambda = powerTransform(AM1.df[,y]~AM1.df$s,family="yjPower")$lambda
+      lambda = powerTransform(AM2.df[,y]~AM2.df$s,family="yjPower")$lambda
     }
   }
   return(as.numeric(lambda))
 }
 
-p.list = sapply(3:ncol(AM1.df),FUN=BoxCoxTrans)
+p.list = sapply(3:ncol(AM2.df),FUN=BoxCoxTrans)
 
-AM1.BC = as.data.frame(sapply(3:ncol(AM1.df),FUN=function(x){
-  if (any(AM1.df[,x]<=0)){
-    yjPower(AM1.df[,x], lambda=p.list[x-2], jacobian.adjusted=FALSE)
+AM2.BC = as.data.frame(sapply(3:ncol(AM2.df),FUN=function(x){
+  if (any(AM2.df[,x]<=0)){
+    yjPower(AM2.df[,x], lambda=p.list[x-2], jacobian.adjusted=FALSE)
   } else {
-    bcPower(AM1.df[,x], lambda=p.list[x-2], jacobian.adjusted=FALSE)
+    bcPower(AM2.df[,x], lambda=p.list[x-2], jacobian.adjusted=FALSE)
   }
 }))
-names(AM1.BC) = names(AM1.df)[3:ncol(AM1.df)]
-AM1.BC = AM1.BC %>% bind_cols(.,select(AM1.df,mf))
+names(AM2.BC) = names(AM2.df)[3:ncol(AM2.df)]
+AM2.BC = AM2.BC %>% bind_cols(.,select(AM2.df,mf))
 
 # Compute PLS components from the n theta' and S' vectors (after Box-Cox transformation)
 library(mixOmics)
-AM1.pls = plsda(AM1.BC[,1:(ncol(AM1.BC)-1)],AM1.BC$mf,ncomp=5,scale=TRUE)
-#plotIndiv(AM1.pls)
+
+AM2.pls = plsda(AM2.BC[,1:(ncol(AM2.BC)-1)],AM2.BC$mf,ncomp=5,scale=TRUE)
+#plotIndiv(AM2.pls)

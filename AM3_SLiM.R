@@ -22,7 +22,7 @@ AM3.BC.trans$var = AM2.pls$Y
 AM3.BC.trans$ID = 1:nrow(AM3.BC.trans)
 
 # Centre and scale observed data, then transform in 5 PLS components
-obsSumStat = read.csv(paste(getwd(),"McManus_ObservedSumStat.csv",sep="/")) %>% select(.,-iHH,-EHH,-pi)
+obsSumStat = read.csv(paste(getwd(),"McManus_ObservedSumStat.csv",sep="/")) %>% select(.,-iHH,-EHH)
 
 obs.BC = t(sapply(3:ncol(AM2.df),FUN=function(x){
   if (any(AM2.df[,x]<=0)){
@@ -59,7 +59,7 @@ if (plot.opt == "yes"){
   library(ggplot2)
   library(viridis)
   
-  AM3.BC.trans$Model = factor(AM3.BC.trans$var, levels=c("one","two","three","four"), labels=c("De Novo","0.1%","1%","10%"))
+  AM3.BC.trans$Model = factor(AM3.BC.trans$var, levels=c("one","two","three","four","five"), labels=c("De Novo","0.1%","1%","10%","25%"))
   
   ggplot()+geom_point(data=AM3.BC.trans,aes(x=comp1,y=comp2,col=Model))+geom_label(data=obs.trans,aes(x=comp1,y=comp2,label=var),size=6)+
     theme_classic()+theme(
