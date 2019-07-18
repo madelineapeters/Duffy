@@ -177,7 +177,6 @@ sum.stat.raw = function(){
   }
   Homozygosity.list = Homozygosity.fun()
 
-  EHH = NA #Homozygosity.list[1]
   H1 = Homozygosity.list[2]
   H2 = Homozygosity.list[3]
   H12 = Homozygosity.list[4]
@@ -186,13 +185,154 @@ sum.stat.raw = function(){
   #Fay and Wu's H
   H = Homozygosity.list[6]
   
-  #iHH
-  iHH = NA
+  #EHH and IHH
+  EHH.fun = function(Frequency){
+    
+    library(rehh)
+    library(caTools)
+    
+    hap = data2haplohh(hap_file=paste("~/SLiM/testSampleVCF",x,".txt",sep=""),polarize_vcf = FALSE, verbose = FALSE)
+    
+    if (3501 %in% hap@positions){
+      
+      if ((1000 %in% hap@positions)&(6001 %in% hap@positions)){
+        
+        hap@positions = hap@positions
+        
+      } else if ((1000 %in% hap@positions)) {
+        
+        hap@positions = as.numeric(c(hap@positions,6001))
+        
+        mat.6001 = matrix(0,nrow=nrow(hap@haplo),ncol=1)
+        mat.temp2 = cbind(hap@haplo,mat.6001)
+        mode(mat.temp2) = "integer"
+        hap@haplo = mat.temp2
+        
+      } else if ((6001 %in% hap@positions)) {
+        
+        hap@positions = as.numeric(c(1000,hap@positions))
+        
+        mat.1000 = matrix(0,nrow=nrow(hap@haplo),ncol=1)
+        mat.temp2 = cbind(mat.1000,hap@haplo)
+        mode(mat.temp2) = "integer"
+        hap@haplo = mat.temp2
+        
+      } else {
+        
+        hap@positions = as.numeric(c(1000,hap@positions,6001))
+        
+        mat.1000 = matrix(0,nrow=nrow(hap@haplo),ncol=1)
+        mat.6001 = matrix(0,nrow=nrow(hap@haplo),ncol=1)
+        mat.temp1 = cbind(mat.1000,hap@haplo)
+        mat.temp2 = cbind(mat.temp1,mat.6001)
+        mode(mat.temp2) = "integer"
+        hap@haplo = mat.temp2
+        
+      }
+      
+      slice = which(hap@positions == 3501)
+      
+      ehh.obj = calc_ehh(hap,mrk=slice,limehh=0.05)
+      
+    } else {
+      
+      if ((1000 %in% hap@positions)&(6001 %in% hap@positions)){
+        
+        hap@positions = as.numeric(c(hap@positions[hap@positions<3501],3501,hap@positions[hap@positions>3501]))
+        
+        mat.3501 = matrix(Frequency,nrow=nrow(hap@haplo),ncol=1)
+        
+        mat.temp1 = cbind(hap@haplo[,1:length(hap@positions[hap@positions<3501])],mat.3501)
+        
+        mat.temp2 = cbind(mat.temp1,hap@haplo[,(length(hap@positions[hap@positions<3501])+1):ncol(hap@haplo)])
+        
+        mode(mat.temp2) = "integer"
+        hap@haplo = mat.temp2
+        
+        hap@positions = as.numeric(c(hap@positions[hap@positions<3501],3501,hap@positions[hap@positions>3501]))
+        
+      } else if ((1000 %in% hap@positions)) {
+        
+        hap@positions = as.numeric(c(hap@positions[hap@positions<3501],3501,hap@positions[hap@positions>3501],6001))
+        
+        mat.3501 = matrix(Frequency,nrow=nrow(hap@haplo),ncol=1)
+        mat.6001 = matrix(0,nrow=nrow(hap@haplo),ncol=1)
+        
+        mat.temp1 = cbind(hap@haplo[,1:length(hap@positions[hap@positions<3501])],mat.3501)
+        
+        mat.temp2 = cbind(hap@haplo[,(length(hap@positions[hap@positions<3501])+1):ncol(hap@haplo)],mat.6001)
+        mat.temp2 = cbind(mat.temp1,mat.temp2)
+        
+        mode(mat.temp2) = "integer"
+        hap@haplo = mat.temp2
+        
+        hap@positions = as.numeric(c(hap@positions[hap@positions<3501],3501,hap@positions[hap@positions>3501],6001))
+        
+      } else if ((6001 %in% hap@positions)) {
+        
+        mat.1000 = matrix(0,nrow=nrow(hap@haplo),ncol=1)
+        mat.3501 = matrix(Frequency,nrow=nrow(hap@haplo),ncol=1)
+        
+        mat.temp1 = cbind(mat.1000,hap@haplo[,1:length(hap@positions[hap@positions<3501])])
+        
+        mat.temp2 = cbind(mat.3501,hap@haplo[,(length(hap@positions[hap@positions<3501])+1):ncol(hap@haplo)])
+        mat.temp2 = cbind(mat.temp1,mat.temp2)
+        
+        mode(mat.temp2) = "integer"
+        hap@haplo = mat.temp2
+        
+        hap@positions = as.numeric(c(1000,hap@positions[hap@positions<3501],3501,hap@positions[hap@positions>3501]))
+        
+      } else {
+        
+        mat.1000 = matrix(0,nrow=nrow(hap@haplo),ncol=1)
+        mat.3501 = matrix(Frequency,nrow=nrow(hap@haplo),ncol=1)
+        mat.6001 = matrix(0,nrow=nrow(hap@haplo),ncol=1)
+        
+        mat.temp1 = cbind(mat.1000,hap@haplo[,1:length(hap@positions[hap@positions<3501])])
+        mat.temp1 = cbind(mat.temp1,mat.3501)
+        
+        mat.temp2 = cbind(hap@haplo[,(length(hap@positions[hap@positions<3501])+1):ncol(hap@haplo)],mat.6001)
+        mat.temp2 = cbind(mat.temp1,mat.temp2)
+        
+        mode(mat.temp2) = "integer"
+        hap@haplo = mat.temp2
+        
+        hap@positions = as.numeric(c(1000,hap@positions[hap@positions<3501],3501,hap@positions[hap@positions>3501],6001))
+        
+      }
+      
+      slice = which(hap@positions == 3501)
+      
+      ehh.obj = calc_ehh(hap,mrk=slice,limehh=0.05)
+      
+    }
+    
+    EHH_A_1000 = ehh.obj$ehh$EHH_A[1]
+    EHH_A_6001 = ehh.obj$ehh$EHH_A[nrow(ehh.obj$ehh)]
+    
+    EHH_A = mean(c(EHH_A_1000,EHH_A_6001))
+    
+    EHH_D_1000 = ehh.obj$ehh$EHH_D[1]
+    EHH_D_6001 = ehh.obj$ehh$EHH_D[nrow(ehh.obj$ehh)]
+    
+    EHH_D = mean(c(EHH_D_1000,EHH_D_6001))
+    
+    IHH_A = trapz(ehh.obj$ehh$POSITION,ehh.obj$ehh$EHH_A)
+    IHH_D = trapz(ehh.obj$ehh$POSITION,ehh.obj$ehh$EHH_D)
+    
+    return(c(EHH_A,EHH_D,IHH_A,IHH_D))
+  }
+  EHH.list = EHH.fun(Frequency)
+  EHH_A = EHH.list[1]
+  EHH_D = EHH.list[2]
+  IHH_A = EHH.list[3]
+  IHH_D = EHH.list[4]
   
   file.remove(paste("~/SLiM/testSampleVCF",x,".txt",sep=""))
   file.remove(paste("~/SLiM/fixedMutations",x,".txt",sep=""))
   
-  return(c(pi,SegSites,TajD,H,iHH,Fixed,Singletons,Doubletons,H1,H2,H12,H2.H1,haploNum,Frequency,EHH,Singletons/Fixed))
+  return(c(pi,SegSites,TajD,H,Fixed,Singletons,Doubletons,H1,H2,H12,H2.H1,haploNum,Frequency,Singletons/Fixed,EHH_A,EHH_D,IHH_A,IHH_D))
   
 }
 
