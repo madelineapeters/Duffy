@@ -1,0 +1,31 @@
+#!/bin/bash
+#SBATCH --nodes=1
+
+#SBATCH --ntasks=20
+
+#SBATCH --mem=502G
+
+#SBATCH --time=5:00:00:00
+
+#SBATCH --output=bwamem_job.txt
+
+cd $SLURM_SUBMIT_DIR
+
+
+
+echo "Job started on `hostname` at `date`" 
+
+echo " " 
+
+
+
+SECONDS=0
+
+module load bwa/0.7.17
+
+parallel bash bwamem_parallel.sh ::: {1..20} ::: YRU
+
+duration=$SECONDS
+
+echo "$(($duration / 60)) minutes and $(($duration % 60)) seconds elapsed."
+
